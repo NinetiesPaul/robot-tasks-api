@@ -1,0 +1,41 @@
+version: '3.7'
+services:
+  web:
+    container_name: web
+    build: './docker/php/'
+    ports:
+     - "8015:80"
+     - "443:443"
+    volumes:
+     - ./app/:/var/www/html
+    links:
+     - db_mysql
+     - db_testing
+
+  db_mysql:
+    container_name: db_mysql
+    image: mysql:5.7
+    ports:
+      - "33060:3306"
+    volumes:
+      - db_mysql_vol:/var/lib/mysql
+    environment:
+     - MYSQL_PASSWORD=root
+     - MYSQL_ROOT_PASSWORD=root
+     - MYSQL_DATABASE=db_name
+
+  db_testing:
+    container_name: db_testing
+    image: mysql:5.7
+    ports:
+      - "33061:3306"
+    volumes:
+      - db_mysql_testing_vol:/var/lib/mysql
+    environment:
+     - MYSQL_PASSWORD=root
+     - MYSQL_ROOT_PASSWORD=root
+     - MYSQL_DATABASE=db_testing
+
+volumes:
+  db_mysql_vol:
+  db_mysql_testing_vol:
