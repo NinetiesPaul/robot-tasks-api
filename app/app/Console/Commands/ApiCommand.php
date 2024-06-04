@@ -17,7 +17,7 @@ class ApiCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'app:api-command {action=create_task|update_task|close_task}';
+    protected $signature = 'app:api-command {action=random}';
 
     /**
      * The console command description.
@@ -46,17 +46,15 @@ class ApiCommand extends Command
 
     /**
      * Execute the console command.
-     * docker-compose exec web php artisan app:api-command
      */
     public function handle()
     {
         Log::channel('requests')->info("*****");
         Log::channel('requests')->info("[LOG] Starting");
 
-        $action = $this->actions[array_rand($this->actions)];
-
-        if ($this->argument('action')) {
-            $action = $this->argument('action');
+        $action = $this->argument('action');
+        if ($action == 'random') {
+            $action = $this->actions[array_rand($this->actions)];
         }
         
         Log::channel('requests')->info("[LOG] Executing '$action' routine");
@@ -70,7 +68,7 @@ class ApiCommand extends Command
                 $taskId = $listTaskRequest->execute([ 'status' => $this->statusArray[array_rand($this->statusArray)] ]);
 
                 if ($taskId) {
-                    new UpdateTaskRequest($this->randomizePaylod(), $taskId);
+                    new UpdateTaskRequest($this->randomizePaylod(true), $taskId);
                 }
                 break;
 
@@ -91,14 +89,17 @@ class ApiCommand extends Command
         Log::channel('requests')->info("[LOG] Finished");
     }
 
-    private function randomizePaylod()
+    private function randomizePaylod($forUpdate = false)
     {
         $payload = [
             'title' => $this->titleArray[array_rand($this->titleArray)],
             'description' => $this->descriptionArray[array_rand($this->descriptionArray)],
             'type' => $this->typeArray[array_rand($this->typeArray)],
-            'status' => $this->statusArray[array_rand($this->statusArray)]
         ];
+
+        if ($forUpdate) {
+            $payload['status'] = $this->statusArray[array_rand($this->statusArray)];
+        }
 
         return $payload;
     }
