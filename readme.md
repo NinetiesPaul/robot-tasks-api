@@ -1,5 +1,5 @@
 # Tasks API Robot
-This is an application written in PHP's Laravel to process simulate requests to the Tasks API.
+This is an application written in PHP's Laravel to simulate requests to the Tasks API.
 
 ## About
 This application runs on Docker. It uses a docker image of PHP 8.1 paired with Apache to run a Laravel 9 application and also a MySQL container.
