@@ -25,27 +25,8 @@ class LoginRequest extends TaskApi
         ]);
 
         if ($response['token']) {
+            Cache::forget('token');
             Cache::put('token', $response['token']);
         }
-
-        /*$url = Config::get('app.api_url');
-        $username = Config::get('app.api_username');
-        $password = Config::get('app.api_password');
-
-        $this->logRequest("POST $this->methodUrl");
-        try {
-            $res = Http::post($url . $this->methodUrl, [
-                'username' => $username,
-                'password' => $password,
-            ]);
-
-            $response = $res->json();
-            $this->logRequest("Request successful: Token " . $response['token'] . " created");
-
-            Cache::put('token', $response['token']);
-        } catch (Exception $ex) {
-            $exception = ($ex->getMessage()) ?? 'Check api log';
-            $this->logRequest(__CLASS__ .  " failed: " . $exception);
-        }*/
     }
 }

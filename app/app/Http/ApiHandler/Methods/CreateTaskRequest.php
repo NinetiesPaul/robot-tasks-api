@@ -3,6 +3,7 @@
 namespace App\Http\ApiHandler\Methods;
 
 use App\Http\ApiHandler\TaskApi;
+use Exception;
 
 class CreateTaskRequest extends TaskApi
 {
@@ -20,7 +21,18 @@ class CreateTaskRequest extends TaskApi
 
     public function execute()
     {
-        $response = $this->handleRequest('post', $this->methodUrl, $this->payload);
-        $this->logRequest("Request successful: Task id " . $response['data']['id'] . " created");
+        try {
+            $response = $this->handleRequest('post', $this->methodUrl, $this->payload);
+            self::logRequest("Request successful: Task id " . $response['data']['id'] . " created");
+        } catch (Exception $ex) {
+            $exception = ($ex->getMessage()) ?? 'Check api log';
+            self::logRequest("Request failed: " . $exception);
+
+            if ($ex->getCode() == 401) {
+                self::retrieveToken(true);
+                self::logRequest("Retrying request");
+                new self($this->payload);
+            }
+        }
     }
 }

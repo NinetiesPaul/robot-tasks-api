@@ -3,6 +3,7 @@
 namespace App\Http\ApiHandler\Methods;
 
 use App\Http\ApiHandler\TaskApi;
+use Exception;
 
 class UpdateTaskRequest extends TaskApi
 {
@@ -23,7 +24,18 @@ class UpdateTaskRequest extends TaskApi
 
     public function execute()
     {
-        $response = $this->handleRequest('put', $this->methodUrl, $this->payload, $this->taskId);
-        $this->logRequest("Request successful: Task id " . $response['data']['id'] . " updated");
+        try {
+            $response = $this->handleRequest('put', $this->methodUrl, $this->payload, $this->taskId);
+            self::logRequest("Request successful: Task id " . $response['data']['id'] . " updated");
+        } catch (Exception $ex) {
+            $exception = ($ex->getMessage()) ?? 'Check api log';
+            self::logRequest("Request failed: " . $exception);
+
+            if ($ex->getCode() == 401) {
+                self::retrieveToken(true);
+                self::logRequest("Retrying request");
+                new self($this->payload, $this->taskId);
+            }
+        }
     }
 }

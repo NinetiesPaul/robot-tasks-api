@@ -3,6 +3,7 @@
 namespace App\Http\ApiHandler\Methods;
 
 use App\Http\ApiHandler\TaskApi;
+use Exception;
 
 class CloseTaskRequest extends TaskApi
 {
@@ -20,7 +21,13 @@ class CloseTaskRequest extends TaskApi
 
     public function execute()
     {
-        $response = $this->handleRequest('put', $this->methodUrl, [], $this->taskId);
-        $this->logRequest("Request successful: Task id " . $response['data']['id'] . " closed");
+        try {
+            $response = $this->handleRequest('put', $this->methodUrl, [], $this->taskId);
+            self::logRequest("Request successful: Task id " . $response['data']['id'] . " closed");
+        } catch (Exception $ex) {
+            self::retrieveToken(true);
+            self::logRequest("Retrying request");
+            new self($this->taskId);
+        }
     }
 }

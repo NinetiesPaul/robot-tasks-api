@@ -18,59 +18,53 @@ class TaskApi
     public function __construct()
     {
         $this->url = Config::get('app.api_url');
-        $this->token = $this->retrieveToken();
+        $this->token = self::retrieveToken();
     }
 
     protected function handleRequest(string $methodType, string $methodUrl, array $payload = [], string $targetId = '', array $params = [])
     {
-        $this->logRequest(strtoupper($methodType) . " $methodUrl" . (($targetId) ? "/$targetId" : '') . (($params) ? "?status=" . $params['status'] : ''));
+        self::logRequest(strtoupper($methodType) . " $methodUrl" . (($targetId) ? "/$targetId" : '') . (($params) ? "?status=" . $params['status'] : ''));
 
         if ($payload) {
-            $this->logRequest("With payload: " . json_encode($payload));
+            self::logRequest("With payload: " . json_encode($payload));
         }
 
-        try {
-            $response = Http::withToken($this->token);
+        $response = Http::withToken($this->token);
 
-            if ($params) {
-                $response->withQueryParameters($params);
-            }
-            
-            $response = $response->{$methodType}($this->url . $methodUrl . (($targetId) ? "/$targetId" : ''), $payload);
-            $response = $response->json();
-            $this->logRequest("API Response: " . json_encode($response));
-
-            if (!$response['success']) {
-                throw new Exception($response['msg']);
-            }
-
-            return $response;
-        } catch (Exception $ex) {
-            $exception = ($ex->getMessage()) ?? 'Check api log';
-            $this->logRequest("Request failed: " . $exception);
+        if ($params) {
+            $response->withQueryParameters($params);
         }
+        
+        $response = $response->{$methodType}($this->url . $methodUrl . (($targetId) ? "/$targetId" : ''), $payload);
+        $responseStatus = $response->status();
+        $responseJson = $response->json();
+        self::logRequest("API Response Code: " . $responseStatus);
+        self::logRequest("API Response Body: " . json_encode($responseJson));
+
+        if ($responseStatus !== 200) {
+            $message = (isset($response['msg'])) ? $response['msg'] : $response['message'];
+            throw new Exception($message, $responseStatus);
+        }
+
+        return $response;
     }
 
-    protected function retrieveToken()
+    protected static function retrieveToken($forceRefresh = false)
     {
-        $this->logRequest("Retrieving token.");
+        self::logRequest("Retrieving token.");
 
         $token = Cache::get('token', false);
-        if (!$token){
-            $this->logRequest("Token not found! Requesting new token.");
+        if (!$token || $forceRefresh){
+            self::logRequest("Requesting new token.");
             new LoginRequest();
             $token = Cache::get('token');
         }
 
-        $this->logRequest("Token retrieved");
+        self::logRequest("Token retrieved: " . $token);
         return $token;
     }
 
-    protected function updateToken()
-    {
-    }
-
-    protected function logRequest($message)
+    protected static function logRequest($message)
     {
         Log::channel('requests')->info("[LOG] " . $message);
     }
