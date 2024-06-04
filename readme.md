@@ -42,7 +42,7 @@ docker-compose exec web php artisan migrate
 ### By direct command
 There's two ways to use this application to generate requests. One way is using the command:
 ```
-docker-compose exec web php artisan app:api-command {action}
+docker-compose exec tar_web php artisan app:api-command {action}
 ```
 It will create a single random request. You can also send this command with an argument to issue specific requests.
 
@@ -51,7 +51,7 @@ Use `create_task` to create a new task, `update_task` to update a task and `clos
 ### By scheduling
 By running the following command
 ```
-docker-compose exec web php artisan schedule:work
+docker-compose exec tar_web php artisan schedule:work
 ```
 you will set up Laravel to run a random request every 30 seconds.
 
