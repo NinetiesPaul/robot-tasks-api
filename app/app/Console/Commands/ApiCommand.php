@@ -31,7 +31,7 @@ class ApiCommand extends Command
      * 
      */
 
-    protected $actions = [ 'create_task', 'update_task', 'close_task' ];
+    protected $actions = [ 'create_task', 'update_task', 'close_task', 'authenticate' ];
 
     protected $descriptionArray = [
         'There\'s a new issue identified by the user, it relates to a new functionality recently added',
