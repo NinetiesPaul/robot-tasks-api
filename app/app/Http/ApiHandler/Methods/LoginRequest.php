@@ -6,7 +6,6 @@ use App\Http\ApiHandler\TaskApi;
 use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Http;
 
 class LoginRequest extends TaskApi
 {
@@ -14,12 +13,13 @@ class LoginRequest extends TaskApi
 
     public function __construct()
     {
+        parent::__construct(true);
         $this->execute();
     }
 
     public function execute()
     {
-        $response = $this->handleRequest('post', Config::get('app.api_url') . $this->methodUrl, [
+        $response = $this->handleRequest('post', $this->methodUrl, [
             'username' => Config::get('app.api_username'),
             'password' => Config::get('app.api_password'),
         ]);
