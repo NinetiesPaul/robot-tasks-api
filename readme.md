@@ -28,12 +28,12 @@ Both files are pre-configured for local and testing enviroment
 
 3. Now you'll need to install all the project's dependencies, execute the following on the project root folder:
 ```
-docker-compose exec web composer install
+docker-compose exec tar_web composer install
 ```
 
 4. Next, you need to run migrations to create the application tables. Execute the following on the project root folder:
 ```
-docker-compose exec web php artisan migrate
+docker-compose exec tar_web php artisan migrate
 ```
 
 5. And you're done! You may need to run a ```docker-compose exec web chmod -R 777 storage/``` command for enabling the app to write on log files.
