@@ -19,14 +19,35 @@ class LoginRequest extends TaskApi
 
     public function execute()
     {
-        $response = $this->handleRequest('post', $this->methodUrl, [
-            'username' => Config::get('app.api_username'),
-            'password' => Config::get('app.api_password'),
-        ]);
+        $tokens = [];
 
-        if ($response['token']) {
-            Cache::forget('token');
-            Cache::put('token', $response['token']);
+        $hosts = explode(";", Config::get('app.api_url'));
+
+        if (Config::get('app.api_mode') == "SINGLE") {
+            $hosts = [ $hosts[0] ];
         }
+
+        $users = explode(";", Config::get('app.api_credentials'));
+
+        foreach ($users as $user) {
+            $user = explode(":", $user);
+
+            foreach ($hosts as $host) {
+
+                $this->forceUrl($host);
+
+                $response = $this->handleRequest('post', $this->methodUrl, [
+                    'username' => $user[0],
+                    'password' => $user[1],
+                ]);
+
+                if ($response['token']) {
+                    $tokens[$host] = $response['token'];
+                } 
+            }
+        }
+
+        Cache::forget('token');
+        Cache::put('token', $tokens);
     }
 }
