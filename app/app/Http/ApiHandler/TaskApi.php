@@ -21,15 +21,14 @@ class TaskApi
 
     public function __construct($skipToken = false)
     {
-        $this->url = $this->retrieveUrl();
         if (!$skipToken) {
-            $this->token = self::retrieveToken();
+            $this->token = $this->retrieveToken();
         }
     }
 
     protected function handleRequest(string $methodType, string $methodUrl, array $payload = [], string $targetId = '', array $params = [])
     {
-        self::logRequest(strtoupper($methodType) . " $methodUrl" . (($targetId) ? "/$targetId" : '') . (($params) ? "?status=" . $params['status'] : ''));
+        self::logRequest(strtoupper($methodType) . " $this->url $methodUrl" . (($targetId) ? "/$targetId" : '') . (($params) ? "?status=" . $params['status'] : ''));
         if ($payload) {
             //self::logRequest("With payload: " . json_encode($payload));
         }
@@ -74,18 +73,29 @@ class TaskApi
         return $response;
     }
 
-    protected static function retrieveToken($forceRefresh = false)
+    protected function retrieveToken($forceRefresh = false)
     {
         self::logRequest("Retrieving token.");
 
-        $token = Cache::get('token', false);
+        $token = $this->selectToken();
         if (!$token || $forceRefresh){
             self::logRequest("Requesting new token.");
             new LoginRequest();
-            $token = Cache::get('token');
+            $token = $this->selectToken();
         }
 
         self::logRequest("Token retrieved");
+        return $token;
+    }
+
+    protected function selectToken()
+    {
+        $tokens = Cache::get('token', false);
+
+        $key = array_rand($tokens);
+        $token = $tokens[$key];
+
+        $this->url = $key;
         return $token;
     }
 
@@ -94,15 +104,8 @@ class TaskApi
         Log::channel('requests')->info("[LOG] " . $message);
     }
 
-    protected function retrieveUrl()
+    protected function forceUrl($url)
     {
-        return Config::get('app.api_url');
-        /*$hosts = explode(";", Config::get('app.api_url'));
-        $this->url = $hosts[array_rand($hosts)];
-
-        $users = explode(";", Config::get('app.api_credentials'));
-        $user = $users[array_rand($users)];
-        $user = explode(":", $user);*/
-        
+        $this->url = $url;
     }
 }
