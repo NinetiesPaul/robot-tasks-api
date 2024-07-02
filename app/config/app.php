@@ -188,7 +188,7 @@ return [
     /*
     */
 
-    'api_url' => env('API_URL'),
-    'api_username' => env('API_LOGIN_USER'),
-    'api_password' => env('API_LOGIN_PASSWORD'),
+    'api_mode' => env('API_MODE'),
+    'api_url_multi' => env('API_URL'),
+    'api_credentials' => env('API_CREDENTIALS'),
 ];
