@@ -16,11 +16,11 @@ return new class extends Migration
             $table->string('host');
             $table->string('url');
             $table->string('type');
-            $table->string('params');
+            $table->string('params')->nullable();
             $table->json('request_body');
-            $table->dateTime('requested_at');
+            $table->dateTime('requested_at', 6);
             $table->json('response_body');
-            $table->dateTime('responded_at');
+            $table->dateTime('responded_at', 6);
             $table->string('duration');
             $table->integer('status');
         });
