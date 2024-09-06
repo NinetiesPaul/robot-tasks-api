@@ -2,10 +2,13 @@
 
 namespace App\Console\Commands;
 
+use App\Http\ApiHandler\Methods\AssignUserRequest;
 use App\Http\ApiHandler\Methods\CloseTaskRequest;
 use App\Http\ApiHandler\Methods\CreateTaskRequest;
 use App\Http\ApiHandler\Methods\ListTaskRequest;
+use App\Http\ApiHandler\Methods\ListUserRequest;
 use App\Http\ApiHandler\Methods\LoginRequest;
+use App\Http\ApiHandler\Methods\UnassignUserRequest;
 use App\Http\ApiHandler\Methods\UpdateTaskRequest;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -31,7 +34,7 @@ class ApiCommand extends Command
      * 
      */
 
-    protected $actions = [ 'create_task', 'update_task', 'close_task', 'authenticate' ];
+    protected $actions = [ 'create_task', 'update_task', 'close_task', 'assign_task', 'unassign_task' ];
 
     protected $descriptionArray = [
         'There\'s a new issue identified by the user, it relates to a new functionality recently added',
@@ -42,7 +45,7 @@ class ApiCommand extends Command
 
     protected $typeArray = [ 'feature', 'bugfix', 'hotfix' ];
 
-    protected $statusArray = [ 'open', 'in_dev', 'blocked', 'in_qa' ];
+    protected $statusArray = [ 'in_dev', 'blocked', 'in_qa' ];
 
     /**
      * Execute the console command.
@@ -65,7 +68,7 @@ class ApiCommand extends Command
 
             case 'update_task':
                 $listTaskRequest = new ListTaskRequest();
-                $taskId = $listTaskRequest->execute([ 'status' => $this->statusArray[array_rand($this->statusArray)] ]);
+                $taskId = $listTaskRequest->execute([ 'status' => 'open' ]);
 
                 if ($taskId) {
                     new UpdateTaskRequest($this->randomizePaylod(true), $taskId);
@@ -78,6 +81,30 @@ class ApiCommand extends Command
 
                 if ($taskId) {
                     new CloseTaskRequest($taskId);
+                }
+                break;
+
+            case 'assign_task':
+                $listUserRequest = new ListUserRequest();
+                $userId = $listUserRequest->execute();
+
+                $listTaskRequest = new ListTaskRequest();
+                $taskId = $listTaskRequest->execute([ 'status' => $this->statusArray[array_rand($this->statusArray)] ]);
+
+                if ($taskId) {
+                    new AssignUserRequest($taskId, $userId);
+                }
+                break;
+
+            case 'unassign_task':
+                $listUserRequest = new ListUserRequest();
+                $userId = $listUserRequest->execute();
+
+                $listTaskRequest = new ListTaskRequest();
+                $assignmentId = $listTaskRequest->execute([ 'unassigned' => 'true' ]);
+
+                if ($assignmentId) {
+                    new UnassignUserRequest($assignmentId);
                 }
                 break;
 
