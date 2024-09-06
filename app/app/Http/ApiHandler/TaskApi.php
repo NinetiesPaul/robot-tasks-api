@@ -29,7 +29,7 @@ class TaskApi
 
     protected function handleRequest(string $methodType, string $methodUrl, array $payload = [], string $targetId = '', array $params = [])
     {
-        self::logRequest(strtoupper($methodType) . " $methodUrl" . (($targetId) ? "/$targetId" : '') . (($params) ? "?status=" . $params['status'] : ''));
+        self::logRequest(strtoupper($methodType) . " $methodUrl" . (($targetId) ? "/$targetId" : '') . (($params) ? "?" . self::prepareParams($params) : ''));
         if ($payload) {
             //self::logRequest("With payload: " . json_encode($payload));
         }
@@ -45,9 +45,9 @@ class TaskApi
             'type' => $methodType,
             'host' => $this->url,
             'url' => "$methodUrl" . (($targetId) ? "/$targetId" : ''),
-            'params' => (($params) ? "?status=" . $params['status'] : null),
+            'params' => (($params) ? "?" . $this->prepareParams($params) : null),
             'request_body' => (($payload) ? json_encode($payload) : null),
-            'requested_at' => $requestedAt->format('Y-m-d h:i:s:u'),
+            'requested_at' => $requestedAt->format('Y-m-d h:i:s.u'),
         ];
 
         $response = $response->{$methodType}($this->url . $methodUrl . (($targetId) ? "/$targetId" : ''), $payload);
@@ -57,7 +57,7 @@ class TaskApi
         $respondedAt = new DateTime();
         $duration = $requestedAt->diff($respondedAt);
         $this->databaseLog['response_body'] = json_encode($responseJson);
-        $this->databaseLog['responded_at'] = $respondedAt->format('Y-m-d h:i:s:u');
+        $this->databaseLog['responded_at'] = $respondedAt->format('Y-m-d h:i:s.u');
         $this->databaseLog['duration'] = $duration->format('%I:%S:%F');
         $this->databaseLog['status'] = $responseStatus;
         
@@ -92,6 +92,21 @@ class TaskApi
     protected static function logRequest($message)
     {
         Log::channel('requests')->info("[LOG] " . $message);
+    }
+
+    protected static function prepareParams($params)
+    {
+        $stringParam = "";
+        $nAttrs = count($params);
+        foreach ($params as $attr => $value) {
+            $stringParam .= "$attr=$value";
+            if (count($params) > 1 && $nAttrs > 1) {
+                $nAttrs -= 1;
+                $stringParam .= "&";
+            }
+        }
+
+        return $stringParam;
     }
 
     protected function retrieveUrl()
