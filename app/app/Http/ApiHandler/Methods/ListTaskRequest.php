@@ -20,7 +20,7 @@ class ListTaskRequest extends TaskApi
             $response = $this->handleRequest('get', $this->methodUrl, [], '', $params);
             self::logRequest("Request successful: Retrieved " . $response['data']['total'] . " tasks");
     
-            if ($params['unassigned']) {
+            if (isset($params['assigned'])) {
                 if ($response['data']['total'] > 0) {
                     $taskAssignees = array_column($response['data']['tasks'][array_rand(array_keys($response['data']['tasks']))]['assignees'], 'id');
                     return $taskAssignees[array_rand($taskAssignees)];
