@@ -97,11 +97,8 @@ class ApiCommand extends Command
                 break;
 
             case 'unassign_task':
-                $listUserRequest = new ListUserRequest();
-                $userId = $listUserRequest->execute();
-
                 $listTaskRequest = new ListTaskRequest();
-                $assignmentId = $listTaskRequest->execute([ 'unassigned' => 'true' ]);
+                $assignmentId = $listTaskRequest->execute([ 'assigned' => 'true' ]);
 
                 if ($assignmentId) {
                     new UnassignUserRequest($assignmentId);
