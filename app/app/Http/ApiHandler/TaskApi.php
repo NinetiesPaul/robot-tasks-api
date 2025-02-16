@@ -46,7 +46,7 @@ class TaskApi
             'host' => $this->url,
             'url' => "$methodUrl" . (($targetId) ? "/$targetId" : ''),
             'params' => (($params) ? "?" . $this->prepareParams($params) : null),
-            'request_body' => (($payload) ? json_encode($payload) : null),
+            'request_body' => (($payload) ? json_encode($payload) : json_encode("")),
             'requested_at' => $requestedAt->format('Y-m-d h:i:s.u'),
         ];
 
@@ -64,9 +64,9 @@ class TaskApi
         self::logRequest("API Response Code: " . $responseStatus);
         //self::logRequest("API Response Body: " . json_encode($responseJson));
 
-        if ($responseStatus !== 200) {
+        if (!in_array($responseStatus, [ 200, 201, 202, 204 ])) {
             RequestLogs::create($this->databaseLog);
-            $message = (isset($response['msg'])) ? $response['msg'] : $response['message'];
+            $message = json_encode($response['message']);
             throw new Exception($message, $responseStatus);
         }
 
