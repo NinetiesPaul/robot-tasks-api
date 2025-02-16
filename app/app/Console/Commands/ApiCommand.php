@@ -4,12 +4,15 @@ namespace App\Console\Commands;
 
 use App\Http\ApiHandler\Methods\AssignUserRequest;
 use App\Http\ApiHandler\Methods\CloseTaskRequest;
+use App\Http\ApiHandler\Methods\CreateCommentRequest;
 use App\Http\ApiHandler\Methods\CreateTaskRequest;
+use App\Http\ApiHandler\Methods\DeleteCommentRequest;
 use App\Http\ApiHandler\Methods\ListTaskRequest;
 use App\Http\ApiHandler\Methods\ListUserRequest;
 use App\Http\ApiHandler\Methods\LoginRequest;
 use App\Http\ApiHandler\Methods\UnassignUserRequest;
 use App\Http\ApiHandler\Methods\UpdateTaskRequest;
+use App\Http\ApiHandler\Methods\ViewTaskRequest;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -102,6 +105,29 @@ class ApiCommand extends Command
 
                 if ($assignmentId) {
                     new UnassignUserRequest($assignmentId);
+                }
+                break;
+
+            case 'comment_task':
+                $listTaskRequest = new ListTaskRequest();
+                $taskId = $listTaskRequest->execute();
+
+                if ($taskId) {
+                    new CreateCommentRequest([ "text" => "This is a Task Comment created by the Robot"], $taskId);
+                }
+                break;
+
+            case 'uncomment_task':
+                $listTaskRequest = new ListTaskRequest();
+                $taskId = $listTaskRequest->execute();
+
+                if ($taskId) {
+                    $taskComment = new ViewTaskRequest($taskId);
+                    $commentId = $taskComment->execute();
+                }
+
+                if ($commentId) {
+                    new DeleteCommentRequest($commentId);
                 }
                 break;
 
