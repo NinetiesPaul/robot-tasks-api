@@ -11,7 +11,7 @@ class ListUserRequest extends TaskApi
 
     public function __construct()
     {
-        parent::__construct();
+        parent::__construct(true);
     }
 
     public function execute($params = [])
