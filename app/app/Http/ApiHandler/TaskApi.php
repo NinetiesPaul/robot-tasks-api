@@ -15,7 +15,7 @@ class TaskApi
 {
     protected $url = '';
 
-    protected $token = '';
+    protected static $token = '';
 
     protected $databaseLog = [];
 
@@ -23,7 +23,7 @@ class TaskApi
     {
         $this->url = $this->retrieveUrl();
         if (!$skipToken) {
-            $this->token = self::retrieveToken();
+            self::retrieveToken();
         }
     }
 
@@ -34,7 +34,7 @@ class TaskApi
             //self::logRequest("With payload: " . json_encode($payload));
         }
 
-        $response = Http::withToken($this->token);
+        $response = Http::withToken(self::$token);
 
         if ($params) {
             $response->withQueryParameters($params);
@@ -77,15 +77,15 @@ class TaskApi
     protected static function retrieveToken($forceRefresh = false)
     {
         $token = Cache::get('token', false);
+
         if (!$token || $forceRefresh){
             $logMessage = (!$token) ? "Token not found on cache. Requesting new" : "Requesting new token forcibly";
             self::logRequest($logMessage);
             new LoginRequest();
-            $token = Cache::get('token');
         }
 
+        self::$token = Cache::get('token');
         self::logRequest("Token retrieved");
-        return $token;
     }
 
     protected static function logRequest($message)
