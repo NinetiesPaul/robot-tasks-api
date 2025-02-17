@@ -24,13 +24,7 @@ class AssignUserRequest extends TaskApi
 
     public function execute()
     {
-        try {
-            $response = $this->handleRequest('post', $this->methodUrl, [ 'assigned_to' => $this->userId ], $this->taskId);
-            self::logRequest("Request successful: Task id " . $response['data']['id'] . " assigned to user " . $this->userId);
-        } catch (Exception $ex) {
-            self::retrieveToken(true);
-            self::logRequest("Retrying request");
-            //new self($this->taskId);
-        }
+        $response = $this->handleRequest('post', $this->methodUrl, [ 'assigned_to' => $this->userId ], $this->taskId);
+        self::logRequest("Request successful: Task id " . $response['data']['id'] . " assigned to user " . $this->userId);
     }
 }

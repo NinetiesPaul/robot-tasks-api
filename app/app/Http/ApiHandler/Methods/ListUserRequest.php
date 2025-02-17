@@ -30,10 +30,6 @@ class ListUserRequest extends TaskApi
         } catch (Exception $ex) {
             $exception = ($ex->getMessage()) ?? 'Check api log';
             self::logRequest("Request failed: " . $exception);
-
-            if ($ex->getCode() == 401) {
-                self::retrieveToken(true);
-            }
         }
     }
 }

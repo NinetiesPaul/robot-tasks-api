@@ -21,18 +21,7 @@ class DeleteCommentRequest extends TaskApi
 
     public function execute()
     {
-        try {
-            $response = $this->handleRequest('delete', $this->methodUrl, [], $this->commentId);
-            self::logRequest("Request successful: Comment id $this->commentId was deleted.");
-        } catch (Exception $ex) {
-            $exception = ($ex->getMessage()) ?? 'Check api log';
-            self::logRequest("Request failed: " . $exception);
-
-            if ($ex->getCode() == 401) {
-                self::retrieveToken(true);
-                self::logRequest("Retrying request");
-                new self($this->commentId);
-            }
-        }
+        $response = $this->handleRequest('delete', $this->methodUrl, [], $this->commentId);
+        self::logRequest("Request successful: Comment id $this->commentId was deleted.");
     }
 }
