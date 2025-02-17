@@ -14,6 +14,7 @@ use App\Http\ApiHandler\Methods\UnassignUserRequest;
 use App\Http\ApiHandler\Methods\UpdateTaskRequest;
 use App\Http\ApiHandler\Methods\ViewTaskRequest;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class ApiCommand extends Command
@@ -134,6 +135,10 @@ class ApiCommand extends Command
 
             case 'authenticate':
                 new LoginRequest();
+                break;
+            
+            case 'invalid_token':
+                Cache::put('token', 'invalid_token');
                 break;
         }
 
