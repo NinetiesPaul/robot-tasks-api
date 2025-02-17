@@ -29,49 +29,59 @@ class TaskApi
 
     protected function handleRequest(string $methodType, string $methodUrl, array $payload = [], string $targetId = '', array $params = [])
     {
-        self::logRequest(strtoupper($methodType) . " $methodUrl" . (($targetId) ? "/$targetId" : '') . (($params) ? "?" . self::prepareParams($params) : ''));
-        if ($payload) {
-            //self::logRequest("With payload: " . json_encode($payload));
-        }
-
-        $response = Http::withToken(self::$token);
-
-        if ($params) {
-            $response->withQueryParameters($params);
-        }
-        
-        $requestedAt = new DateTime();
-        $this->databaseLog = [
-            'type' => $methodType,
-            'host' => $this->url,
-            'url' => "$methodUrl" . (($targetId) ? "/$targetId" : ''),
-            'params' => (($params) ? "?" . $this->prepareParams($params) : null),
-            'request_body' => (($payload) ? json_encode($payload) : json_encode("")),
-            'requested_at' => $requestedAt->format('Y-m-d h:i:s.u'),
-        ];
-
-        $response = $response->{$methodType}($this->url . $methodUrl . (($targetId) ? "/$targetId" : ''), $payload);
-        $responseStatus = $response->status();
-        $responseJson = $response->json();
-
-        $respondedAt = new DateTime();
-        $duration = $requestedAt->diff($respondedAt);
-        $this->databaseLog['response_body'] = json_encode($responseJson);
-        $this->databaseLog['responded_at'] = $respondedAt->format('Y-m-d h:i:s.u');
-        $this->databaseLog['duration'] = $duration->format('%I:%S:%F');
-        $this->databaseLog['status'] = $responseStatus;
-        
-        self::logRequest("API Response Code: " . $responseStatus);
-        //self::logRequest("API Response Body: " . json_encode($responseJson));
-
-        if (!in_array($responseStatus, [ 200, 201, 202, 204 ])) {
+        try {
+            self::logRequest(strtoupper($methodType) . " $methodUrl" . (($targetId) ? "/$targetId" : '') . (($params) ? "?" . self::prepareParams($params) : ''));
+            if ($payload) {
+                //self::logRequest("With payload: " . json_encode($payload));
+            }
+    
+            $response = Http::withToken(self::$token);
+    
+            if ($params) {
+                $response->withQueryParameters($params);
+            }
+            
+            $requestedAt = new DateTime();
+            $this->databaseLog = [
+                'type' => $methodType,
+                'host' => $this->url,
+                'url' => "$methodUrl" . (($targetId) ? "/$targetId" : ''),
+                'params' => (($params) ? "?" . $this->prepareParams($params) : null),
+                'request_body' => (($payload) ? json_encode($payload) : json_encode("")),
+                'requested_at' => $requestedAt->format('Y-m-d h:i:s.u'),
+            ];
+    
+            $response = $response->{$methodType}($this->url . $methodUrl . (($targetId) ? "/$targetId" : ''), $payload);
+            $responseStatus = $response->status();
+            $responseJson = $response->json();
+    
+            $respondedAt = new DateTime();
+            $duration = $requestedAt->diff($respondedAt);
+            $this->databaseLog['response_body'] = json_encode($responseJson);
+            $this->databaseLog['responded_at'] = $respondedAt->format('Y-m-d h:i:s.u');
+            $this->databaseLog['duration'] = $duration->format('%I:%S:%F');
+            $this->databaseLog['status'] = $responseStatus;
+            
+            self::logRequest("API Response Code: " . $responseStatus);
+            //self::logRequest("API Response Body: " . json_encode($responseJson));
+    
+            if (!in_array($responseStatus, [ 200, 201, 202, 204 ])) {
+                RequestLogs::create($this->databaseLog);
+                $message = json_encode($response['message']);
+                throw new Exception($message, $responseStatus);
+            }
+    
             RequestLogs::create($this->databaseLog);
-            $message = json_encode($response['message']);
-            throw new Exception($message, $responseStatus);
-        }
+            return $response;
+        } catch (Exception $ex) {
+            $exception = ($ex->getMessage()) ?? 'Check api log';
+            self::logRequest("Request failed: " . $exception);
 
-        RequestLogs::create($this->databaseLog);
-        return $response;
+            if ($ex->getCode() == 401) {
+                self::retrieveToken(true);
+                return $this->handleRequest($methodType, $methodUrl, $payload, $targetId, $params);
+            }
+        }
     }
 
     protected static function retrieveToken($forceRefresh = false)
