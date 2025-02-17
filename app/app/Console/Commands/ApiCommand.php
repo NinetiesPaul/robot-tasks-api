@@ -121,13 +121,14 @@ class ApiCommand extends Command
                 $listTaskRequest = new ListTaskRequest();
                 $taskId = $listTaskRequest->execute();
 
+                $commentId = null;
                 if ($taskId) {
-                    $taskComment = new ViewTaskRequest($taskId);
-                    $commentId = $taskComment->execute();
-                }
+                    $viewTask = new ViewTaskRequest($taskId);
+                    $commentId = $viewTask->execute();
 
-                if ($commentId) {
-                    new DeleteCommentRequest($commentId);
+                    if ($commentId) {
+                        new DeleteCommentRequest($commentId);
+                    }
                 }
                 break;
 
