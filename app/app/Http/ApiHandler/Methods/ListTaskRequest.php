@@ -40,6 +40,7 @@ class ListTaskRequest extends TaskApi
 
             if ($ex->getCode() == 401) {
                 self::retrieveToken(true);
+                return $this->execute();
             }
         }
     }
