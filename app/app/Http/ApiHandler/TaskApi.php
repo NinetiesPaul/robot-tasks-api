@@ -76,11 +76,10 @@ class TaskApi
 
     protected static function retrieveToken($forceRefresh = false)
     {
-        self::logRequest("Retrieving token.");
-
         $token = Cache::get('token', false);
         if (!$token || $forceRefresh){
-            self::logRequest("Requesting new token.");
+            $logMessage = (!$token) ? "Token not found on cache. Requesting new" : "Requesting new token forcibly";
+            self::logRequest($logMessage);
             new LoginRequest();
             $token = Cache::get('token');
         }
