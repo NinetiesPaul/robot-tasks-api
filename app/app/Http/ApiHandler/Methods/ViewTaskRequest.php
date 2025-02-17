@@ -37,8 +37,6 @@ class ViewTaskRequest extends TaskApi
 
             if ($ex->getCode() == 401) {
                 self::retrieveToken(true);
-                self::logRequest("Retrying request");
-                new self($this->taskId);
             }
         }
     }
