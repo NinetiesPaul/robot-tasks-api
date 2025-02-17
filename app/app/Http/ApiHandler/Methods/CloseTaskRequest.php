@@ -25,9 +25,14 @@ class CloseTaskRequest extends TaskApi
             $response = $this->handleRequest('put', $this->methodUrl, [], $this->taskId);
             self::logRequest("Request successful: Task id " . $response['data']['id'] . " closed");
         } catch (Exception $ex) {
-            self::retrieveToken(true);
-            self::logRequest("Retrying request");
-            new self($this->taskId);
+            $exception = ($ex->getMessage()) ?? 'Check api log';
+            self::logRequest("Request failed: " . $exception);
+
+            if ($ex->getCode() == 401) {
+                self::retrieveToken(true);
+                self::logRequest("Retrying request");
+                new self($this->taskId);
+            }
         }
     }
 }

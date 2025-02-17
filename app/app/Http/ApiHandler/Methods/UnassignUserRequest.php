@@ -25,9 +25,14 @@ class UnassignUserRequest extends TaskApi
             $response = $this->handleRequest('delete', $this->methodUrl, [], $this->assignmentId);
             self::logRequest("Request successful: Assignment id $this->assignmentId was deleted.");
         } catch (Exception $ex) {
-            self::retrieveToken(true);
-            self::logRequest("Retrying request");
-            //new self($this->taskId);
+            $exception = ($ex->getMessage()) ?? 'Check api log';
+            self::logRequest("Request failed: " . $exception);
+
+            if ($ex->getCode() == 401) {
+                self::retrieveToken(true);
+                self::logRequest("Retrying request");
+                new self($this->assignmentId);
+            }
         }
     }
 }
