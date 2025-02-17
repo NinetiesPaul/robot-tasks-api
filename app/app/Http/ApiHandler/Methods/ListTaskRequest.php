@@ -16,32 +16,22 @@ class ListTaskRequest extends TaskApi
 
     public function execute($params = [])
     {
-        try{
-            $response = $this->handleRequest('get', $this->methodUrl, [], '', $params);
-            self::logRequest("Request successful: Retrieved " . $response['data']['total'] . " tasks");
-    
-            if (isset($params['assigned'])) {
-                if ($response['data']['total'] > 0) {
-                    $taskAssignees = array_column($response['data']['tasks'][array_rand(array_keys($response['data']['tasks']))]['assignees'], 'id');
-                    return $taskAssignees[array_rand($taskAssignees)];
-                }
-            }
+        $response = $this->handleRequest('get', $this->methodUrl, [], '', $params);
+        self::logRequest("Request successful: Retrieved " . $response['data']['total'] . " tasks");
 
-            $taskIds = array_column($response['data']['tasks'], 'id');
-            if (count($taskIds) > 0) {
-                return $taskIds[array_rand($taskIds)];
-            }
-            
-            self::logRequest("Request finished with no changes: No tasks could be found with parameters: '" . self::prepareParams($params) . "'");
-            return null;
-        } catch (Exception $ex) {
-            $exception = ($ex->getMessage()) ?? 'Check api log';
-            self::logRequest("Request failed: " . $exception);
-
-            if ($ex->getCode() == 401) {
-                self::retrieveToken(true);
-                return $this->execute();
+        if (isset($params['assigned'])) {
+            if ($response['data']['total'] > 0) {
+                $taskAssignees = array_column($response['data']['tasks'][array_rand(array_keys($response['data']['tasks']))]['assignees'], 'id');
+                return $taskAssignees[array_rand($taskAssignees)];
             }
         }
+
+        $taskIds = array_column($response['data']['tasks'], 'id');
+        if (count($taskIds) > 0) {
+            return $taskIds[array_rand($taskIds)];
+        }
+        
+        self::logRequest("Request finished with no changes: No tasks could be found with parameters: '" . self::prepareParams($params) . "'");
+        return null;
     }
 }

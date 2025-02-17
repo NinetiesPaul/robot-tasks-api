@@ -24,18 +24,7 @@ class CreateCommentRequest extends TaskApi
 
     public function execute()
     {
-        try {
-            $response = $this->handleRequest('post', $this->methodUrl, $this->payload, $this->taskId);
-            self::logRequest("Request successful: Comment id " . $response['data']['id'] . " created");
-        } catch (Exception $ex) {
-            $exception = ($ex->getMessage()) ?? 'Check api log';
-            self::logRequest("Request failed: " . $exception);
-
-            if ($ex->getCode() == 401) {
-                self::retrieveToken(true);
-                self::logRequest("Retrying request");
-                new self($this->payload, $this->taskId);
-            }
-        }
+        $response = $this->handleRequest('post', $this->methodUrl, $this->payload, $this->taskId);
+        self::logRequest("Request successful: Comment id " . $response['data']['id'] . " created");
     }
 }
